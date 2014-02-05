@@ -1,0 +1,30 @@
+#!/bin/bash -ex
+install()
+{
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get -y \
+        -o DPkg::Options::=--force-confdef \
+        -o DPkg::Options::=--force-confold \
+        install $@
+}
+
+LDAP_PASS=turnkey
+LDAP_DOMAIN=example.com
+
+# install samba-doc package to get the samba schema
+install samba-doc
+
+# copy the samba schema to the ldap config directory
+zcat /usr/share/doc/samba-doc/examples/LDAP/samba.schema.gz > /etc/ldap/schema/samba.schema
+zcat /usr/share/doc/samba-doc/examples/LDAP/samba.ldif.gz > /etc/ldap/schema/samba.ldif
+
+# add to openldap-reinit script to include schema, indices, and access control
+CONF=/usr/lib/inithooks/bin/openldap-reinit.sh
+sed -i "s|# update phpldapadmin|# add samba schema\nldapadd -Q -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/samba.ldif\n\n# add samba specific indices\nldapmodify -Y EXTERNAL -H ldapi:/// <<EOL\ndn: olcDatabase={1}hdb,cn=config\nadd: olcDbIndex\nolcDbIndex: sambaSID eq\n-\nadd: olcDbIndex\nolcDbIndex: sambaPrimaryGroupSID eq\n-\nadd: olcDbIndex\nolcDbIndex: sambaGroupType eq\n-\nadd: olcDbIndex\nolcDbIndex: sambaSIDList eq\n-\nadd: olcDbIndex\nolcDbIndex: sambaDomainName eq\nEOL\n\n# add samba specific access rules\nldapmodify -Y EXTERNAL -H ldapi:/// <<EOL\ndn: olcDatabase={1}hdb,cn=config\ndelete: olcAccess\nolcAccess: {0}\n-\nadd: olcAccess\nolcAccess: {0}to attrs=userPassword,shadowLastChange,SambaLMPassword,SambaNTPassword by self write by anonymous auth by dn=\"cn=admin,\$LDAP_BASEDN\" write by * none\n-\nadd: olcAccess\nolcAccess: {0}to filter=(objectClass=sambaDomain) by dn=\"uid=samba,\$LDAP_BASEDN\" write by dn=\"cn=admin,\$LDAP_BASEDN\" write by * read\n-\nadd: olcAccess\nolcAccess: {0}to dn.children=\"ou=Users,\$LDAP_BASEDN\" by self write by dn=\"uid=samba,\$LDAP_BASEDN\" write by dn=\"cn=admin,\$LDAP_BASEDN\" write by * read\n-\nadd: olcAccess\nolcAccess: {0}to dn.children=\"ou=Users,\$LDAP_BASEDN\" attrs=userPassword,shadowLastChange,SambaLMPassword,SambaNTPassword by self write by anonymous auth by dn=\"uid=samba,\$LDAP_BASEDN\" write by dn=\"cn=admin,\$LDAP_BASEDN\" write by * none\nEOL\n\n# update phpldapadmin|" $CONF
+
+# re-initialize ldap
+/usr/lib/inithooks/bin/openldap.py --domain=$LDAP_DOMAIN --pass=$LDAP_PASS
+
+# remove backup from re-initialization
+rm -rf /var/backups/slapd-
+rm -rf /var/backups/*.ldapdb
