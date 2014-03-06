@@ -21,8 +21,8 @@ zcat /usr/share/doc/samba-doc/examples/LDAP/samba.ldif.gz > /etc/ldap/schema/sam
 # add to openldap-reinit script to include schema, user, indices, and access control
 CONF=/usr/lib/inithooks/bin/openldap-reinit.sh
 
-# add hosts subtree and samba user to pre-populated database
-sed -i "s|ou: Users|ou: Users\n\ndn: ou=Hosts,\$LDAP_BASEDN\nobjectclass: organizationalUnit\nobjectclass: top\nou: Hosts\n\ndn: cn=samba,\$LDAP_BASEDN\ncn: samba\nobjectclass: simpleSecurityObject\nobjectclass: organizationalRole\ndescription: SAMBA Access Account\nuserPassword: \$LDAP_PASS_RAND|" $CONF
+# add hosts subtree, domains subtree and samba user to pre-populated database
+sed -i "s|ou: Users|ou: Users\n\ndn: ou=Hosts,\$LDAP_BASEDN\nobjectclass: organizationalUnit\nobjectclass: top\nou: Hosts\n\nddn: ou=Domains,\$LDAP_BASEDN\nobjectclass: organizationalUnit\nobjectclass: top\nou: Domains\n\ndn: cn=samba,\$LDAP_BASEDN\ncn: samba\nobjectclass: simpleSecurityObject\nobjectclass: organizationalRole\ndescription: SAMBA Access Account\nuserPassword: \$LDAP_PASS_RAND|" $CONF
 
 # update nsspam access rule
 sed -i "s|userPassword,shadowLastChange|userPassword,shadowLastChange,SambaLMPassword,SambaNTPassword|" $CONF
