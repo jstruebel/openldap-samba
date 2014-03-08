@@ -56,7 +56,7 @@
 	<display>UID Number</display>
 	<order>6</order>
 	<page>1</page>
-	<value>=php.GetNextNumber(/;uidNumber)</value>
+	<value><![CDATA[=php.GetNextNumber(/;uidNumber)]]></value>
 </attribute>
 <attribute id="sambaSID">
 	<display>Samba SID</display>
@@ -70,7 +70,7 @@
 	<page>1</page>
 	<post>=php.Join(-;(%sambaSID%,%sidsuffix%))</post>
 	<spacer>1</spacer>
-	<value><![CDATA[=php.PickList(/;(objectClass=sambaDomain);sambaSID;%sambaSID% (%sambaDomainName%))]]></value>
+	<value><![CDATA[=php.PickList(/;(&(objectClass=sambaDomain));sambaSID;%sambaSID% (%sambaDomainName%);;;;sambaDomainName)]]></value>
 </attribute>
 <attribute id="userPassword">
 	<display>Password</display>
@@ -126,7 +126,8 @@
 	<page>1</page>
 	<!-- <value><![CDATA[=php.PickList(/;(&(objectClass=posixAccount));loginShell;%loginShell%;;;;loginShell)]]></value> -->
 	<type>select</type>
-	<value id="/bin/sh">Bash</value>
+	<value id="/bin/dash">Almquist Shell</value>
+	<value id="/bin/bash">Bourne Shell</value>
 	<value id="/bin/csh">C Shell</value>
 	<value id="/bin/tsh">Turbo Shell</value>
 	<value id="/bin/false">None</value>
@@ -135,7 +136,7 @@
 	<display>Group</display>
 	<order>12</order>
 	<page>1</page>
-	<value><![CDATA[=php.PickList(/;(objectClass=posixGroup);gidNumber;%cn%)]]></value>
+	<value><![CDATA[=php.PickList(/;(&(objectClass=posixGroup));gidNumber;%cn%;;;;cn)]]></value>
 </attribute>
 <!--
 <attribute id="sambaPrimaryGroupSID">
