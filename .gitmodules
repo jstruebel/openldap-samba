@@ -1,0 +1,3 @@
+[submodule "patches/01openldap-nsspam"]
+	path = patches/01openldap-nsspam
+	url = https://github.com/jstruebel/openldap-nsspam.git
