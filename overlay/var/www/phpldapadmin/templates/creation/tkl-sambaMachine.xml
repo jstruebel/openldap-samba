@@ -3,12 +3,12 @@
 
 <template>
 <askcontainer>1</askcontainer>
-<description>New Samba3 Machine</description>
+<description>New Samba Machine</description>
 <icon>server.png</icon>
 <invalid>0</invalid>
 <rdn>uid</rdn>
 <!--<regexp>^ou=People,o=.*,</regexp>-->
-<title>TurnKey Linux: Samba3 Machine</title>
+<title>TurnKey Linux: Samba Machine</title>
 <visible>1</visible>
 
 <objectClasses>
